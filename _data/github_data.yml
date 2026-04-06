@@ -1,0 +1,7 @@
+projects:
+- name: Web_Profile
+  repo_url: https://github.com/kdHyeok/Web_Profile
+  pages_url: https://kdHyeok.github.io/Web_Profile/
+  description: 웹 포트폴리오
+  language: HTML
+algorithms: []

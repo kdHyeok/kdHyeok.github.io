@@ -1,0 +1,3 @@
+- name: "My Auto Blog"
+  url: "https://github.com/kdHyeok/github.io"
+  description: "Jekyll로 만든 자동화 블로그"
