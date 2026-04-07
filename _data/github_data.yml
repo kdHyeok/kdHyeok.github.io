@@ -1,4 +1,9 @@
 projects:
+- name: ssafy_ai_2
+  repo_url: https://github.com/kdHyeok/ssafy_ai_2
+  pages_url: https://kdHyeok.github.io/ssafy_ai_2/
+  description: 설명이 없습니다.
+  language: Jupyter Notebook
 - name: Web_Profile
   repo_url: https://github.com/kdHyeok/Web_Profile
   pages_url: https://kdHyeok.github.io/Web_Profile/
@@ -12,7 +17,7 @@ algorithms:
   language: C++
 baekjoon:
   tier: 7
-  rank: 111208
+  rank: 111209
   solved_count: 39
   streak: 3
   tier_image: https://static.solved.ac/tier_small/7.svg
