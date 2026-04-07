@@ -6,11 +6,8 @@ layout: home
 실제 개발하고 구현한 프로젝트들입니다.
 <ul>
   {% for item in site.data.github_data.projects %}
-    <li>
-      <strong><a href="{{ item.url }}">{{ item.name }}</a></strong> ({{ item.language }})
-      <p>{{ item.description }}</p>
-    </li>
-  {% endfor %}
+   <a href="{{ item.pages_url }}" target="_blank">View Page</a>
+{% endfor %}
 </ul>
 
 ---
@@ -24,3 +21,25 @@ layout: home
     </li>
   {% endfor %}
 </ul>
+
+### 🚩 최근 해결한 문제 (Latest Solved)
+<ul>
+  {% for prob in site.data.github_data.recent_solved reversed %}
+    <li>
+      <span class="label">{{ prob.tier }}</span> 
+      <a href="{{ prob.url }}" target="_blank">{{ prob.name }}</a>
+    </li>
+  {% endfor %}
+</ul>
+
+<style>
+  .label {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 12px;
+    background: #000;
+    color: #fff;
+    border-radius: 4px;
+    margin-right: 5px;
+  }
+</style>

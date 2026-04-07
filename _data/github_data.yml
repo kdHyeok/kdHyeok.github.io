@@ -4,4 +4,22 @@ projects:
   pages_url: https://kdHyeok.github.io/Web_Profile/
   description: 웹 포트폴리오
   language: HTML
-algorithms: []
+algorithms:
+- name: Algorithms
+  repo_url: https://github.com/kdHyeok/Algorithms
+  pages_url: https://kdHyeok.github.io/Algorithms/
+  description: 설명이 없습니다.
+  language: C++
+baekjoon:
+  tier: 7
+  rank: 111205
+  solved_count: 39
+  streak: 3
+  tier_image: https://static.solved.ac/tier_small/7.svg
+recent_solved:
+- name: 11438. LCA 2
+  tier: Platinum
+  url: https://github.com/kdHyeok/Algorithms/tree/main/%EB%B0%B1%EC%A4%80/Platinum/11438.%E2%80%85LCA%E2%80%852
+- name: 30467. 등불 날리기
+  tier: Platinum
+  url: https://github.com/kdHyeok/Algorithms/tree/main/%EB%B0%B1%EC%A4%80/Platinum/30467.%E2%80%85%EB%93%B1%EB%B6%88%E2%80%85%EB%82%A0%EB%A6%AC%EA%B8%B0
