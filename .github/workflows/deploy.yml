@@ -1,0 +1,50 @@
+name: Auto Update and Deploy
+
+on:
+  push:
+    branches: ["main"]  # main 브랜치에 푸시될 때 실행
+  schedule:
+    - cron: '0 20 * * *' # 매일 한국 시간 새벽 5시 (UTC 20:00)에 자동 실행
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Python Dependencies
+        run: pip install requests PyYAML
+
+      - name: Update Data
+        run: python update_projects.py
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add _data/github_data.yml
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update github data" && git push)
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
