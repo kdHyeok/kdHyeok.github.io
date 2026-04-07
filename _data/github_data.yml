@@ -12,7 +12,7 @@ algorithms:
   language: C++
 baekjoon:
   tier: 7
-  rank: 111205
+  rank: 111208
   solved_count: 39
   streak: 3
   tier_image: https://static.solved.ac/tier_small/7.svg
