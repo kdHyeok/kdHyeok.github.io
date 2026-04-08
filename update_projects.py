@@ -7,10 +7,45 @@ USERNAME = "kdHyeok"
 BOJ_ID = "kimdh219"
 ALGO_REPO = "Algorithms"
 
+def get_headers():
+    token = os.environ.get("GITHUB_TOKEN")
+    return {"Authorization": f"token {token}"} if token else {}
+
 def get_github_repos():
     url = f"https://api.github.com/users/{USERNAME}/repos?per_page=100&sort=updated"
-    response = requests.get(url)
+    response = requests.get(url, headers=get_headers())
     return response.json()
+
+def get_readme_description(repo_name):
+    """README.md 첫 문단을 가져와 설명으로 사용"""
+    url = f"https://api.github.com/repos/{USERNAME}/{repo_name}/readme"
+    resp = requests.get(url, headers=get_headers())
+    if resp.status_code != 200:
+        return None
+    import base64, re
+    content = base64.b64decode(resp.json()["content"]).decode("utf-8")
+    lines = []
+    heading_fallback = []
+    for line in content.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            if lines:
+                break
+            continue
+        if stripped.startswith("![") or stripped.startswith("[!["):
+            continue
+        if stripped.startswith("#"):
+            # 헤딩 텍스트는 폴백용으로 보관
+            heading_text = re.sub(r"^#+\s*", "", stripped)
+            if heading_text:
+                heading_fallback.append(heading_text)
+            continue
+        lines.append(stripped)
+    text = " ".join(lines) if lines else " | ".join(heading_fallback[1:])  # h1 제외
+    # 마크다운 링크/강조 제거
+    text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"[*_`]", "", text)
+    return text.strip()[:200] if text.strip() else None
 
 def get_solved_ac_stats():
     url = f"https://solved.ac/api/v3/user/show?handle={BOJ_ID}"
@@ -69,11 +104,18 @@ def main():
         else:
             generated_pages_url = f"https://{USERNAME}.github.io/{repo_name}/"
 
+        # portfolio/project 태그가 있는 레포만 README 조회
+        is_content_repo = 'portfolio' in topics or 'project' in topics
+        if is_content_repo:
+            readme_desc = get_readme_description(repo_name)
+        else:
+            readme_desc = None
+
         repo_info = {
             'name': repo_name,
             'repo_url': repo['html_url'],
             'pages_url': generated_pages_url,
-            'description': repo['description'] or "설명이 없습니다.",
+            'description': readme_desc or repo['description'] or "설명이 없습니다.",
             'language': repo['language']
         }
 
@@ -99,8 +141,20 @@ def main():
     os.makedirs('_data', exist_ok=True)
     with open('_data/github_data.yml', 'w', encoding='utf-8') as f:
         yaml.dump(data, f, allow_unicode=True, sort_keys=False)
-    
-    print("성공적으로 github_data.yml이 갱신되었습니다.")
+
+    # 5. contact.yml 갱신 (포트폴리오 페이지 링크)
+    contact = [{'type': 'github', 'icon': 'fab fa-github'}]
+    for portfolio in data['portfolios']:
+        contact.append({
+            'type': 'portfolio',
+            'icon': 'fas fa-globe',
+            'url': portfolio['pages_url'],
+            'noblank': False
+        })
+    with open('_data/contact.yml', 'w', encoding='utf-8') as f:
+        yaml.dump(contact, f, allow_unicode=True, sort_keys=False)
+
+    print("성공적으로 github_data.yml, contact.yml이 갱신되었습니다.")
 
 if __name__ == "__main__":
     main()

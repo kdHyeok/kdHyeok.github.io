@@ -26,9 +26,11 @@
 }
 
 .project-card {
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--card-border-color, #e1e4e8);
   border-radius: 10px;
-  padding: 20px;
+  overflow: hidden;
   background: var(--card-bg, #fff);
   transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -38,9 +40,19 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
-.project-card h3 {
-  margin: 0.5rem 0;
+.project-card__body {
+  flex: 1;
+  padding: 18px 20px 12px;
+}
+
+.project-card__body h3 {
+  margin: 0.4rem 0 0.5rem;
   font-size: 1rem;
+}
+
+.project-card__footer {
+  padding: 10px 20px 14px;
+  border-top: 1px solid var(--card-border-color, #f0f0f0);
 }
 
 .lang-badge {
@@ -53,12 +65,12 @@
   font-weight: 500;
 }
 
-.btn-demo,
+.btn-page,
 .btn-github {
-  display: inline-block;
-  margin-top: 12px;
-  margin-right: 8px;
-  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
@@ -66,8 +78,13 @@
   transition: opacity 0.15s;
 
   &:hover {
-    opacity: 0.85;
+    opacity: 0.82;
   }
+}
+
+.btn-page {
+  background: #0366d6;
+  color: white !important;
 }
 
 .btn-github {

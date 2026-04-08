@@ -2,13 +2,14 @@ portfolios:
 - name: Web_Profile
   repo_url: https://github.com/kdHyeok/Web_Profile
   pages_url: https://kdHyeok.github.io/Web_Profile/
-  description: 웹 포트폴리오
+  description: 이 문서는 김동혁의 웹 포트폴리오 프로젝트의 구조, 기능, 유지보수 방법을 설명하는 가이드입니다. 이 프로젝트는 반응형
+    웹 디자인이 적용되어 있으며, 인쇄(PDF 저장)에 최적화된 기능을 포함하고 있습니다.
   language: HTML
 projects:
 - name: ssafy_ai_2
   repo_url: https://github.com/kdHyeok/ssafy_ai_2
   pages_url: https://kdHyeok.github.io/ssafy_ai_2/
-  description: 설명이 없습니다.
+  description: ai 챌린지 참여 파일
   language: Jupyter Notebook
 algorithms:
 - name: Algorithms

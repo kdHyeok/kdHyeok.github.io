@@ -1,0 +1,6 @@
+- type: github
+  icon: fab fa-github
+- type: portfolio
+  icon: fas fa-globe
+  url: https://kdHyeok.github.io/Web_Profile/
+  noblank: false

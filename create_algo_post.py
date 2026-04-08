@@ -1,21 +1,25 @@
+"""
+Algorithms 레포의 README를 읽어 _posts/ 에 Jekyll 포스트로 동기화합니다.
+- 포스트가 없으면 새로 생성
+- README가 변경됐으면 기존 포스트를 덮어씀
+- 사용자가 README에 추가한 섹션(풀이 전략 등)도 그대로 반영
+"""
 import requests
 import os
 import re
+import hashlib
 
 USERNAME = "kdHyeok"
 ALGO_REPO = "Algorithms"
 
 
 def get_headers():
-    headers = {}
     token = os.environ.get("GITHUB_TOKEN")
-    if token:
-        headers["Authorization"] = f"token {token}"
-    return headers
+    return {"Authorization": f"token {token}"} if token else {}
 
 
 def get_recent_commits():
-    url = f"https://api.github.com/repos/{USERNAME}/{ALGO_REPO}/commits?per_page=50"
+    url = f"https://api.github.com/repos/{USERNAME}/{ALGO_REPO}/commits?per_page=100"
     resp = requests.get(url, headers=get_headers())
     return resp.json() if resp.status_code == 200 else []
 
@@ -31,7 +35,7 @@ def get_raw(raw_url):
     return resp.text if resp.status_code == 200 else ""
 
 
-def parse_path(filepath):
+def parse_code_path(filepath):
     """백준/{Tier}/{num}. {title}/{title}.{ext}"""
     pattern = r"백준/([^/]+)/(\d+)\.\s*(.+?)/[^/]+\.(cpp|cc|java|py|kt|js|ts)$"
     m = re.match(pattern, filepath)
@@ -40,9 +44,34 @@ def parse_path(filepath):
     return None, None, None, None
 
 
-def parse_readme(readme_text):
-    """BaekjoonHub README에서 필요한 섹션 추출"""
-    result = {"performance": "", "categories": "", "description": "", "input": "", "output": ""}
+def parse_readme_path(filepath):
+    """백준/{Tier}/{num}. {title}/README.md"""
+    m = re.match(r"백준/([^/]+)/(\d+)\.\s*(.+?)/README\.md$", filepath)
+    if m:
+        return m.group(1), m.group(2), m.group(3).strip()
+    return None, None, None
+
+
+def readme_to_post_body(readme_text):
+    """
+    BaekjoonHub README를 Jekyll 포스트 본문으로 변환.
+    - 첫 번째 h1 제거 (제목은 front matter에서 사용)
+    - HTML 태그는 Jekyll에서 그대로 렌더링됨
+    - 사용자가 추가한 섹션(풀이 전략 등) 유지
+    """
+    lines = readme_text.splitlines()
+    # 첫 번째 # 제목 제거
+    start = 0
+    for i, line in enumerate(lines):
+        if line.startswith("# "):
+            start = i + 1
+            break
+    return "\n".join(lines[start:]).strip()
+
+
+def extract_meta(readme_text):
+    """README에서 태그, 성능 정보 추출"""
+    result = {"tags": [], "performance": ""}
 
     perf = re.search(r"메모리:\s*(.+?),\s*시간:\s*(.+)", readme_text)
     if perf:
@@ -50,35 +79,42 @@ def parse_readme(readme_text):
 
     cat = re.search(r"### 분류\s*\n+([\s\S]+?)(?=\n###|\Z)", readme_text)
     if cat:
-        result["categories"] = cat.group(1).strip()
-
-    desc = re.search(r"### 문제 설명\s*\n+([\s\S]+?)(?=\n###|\Z)", readme_text)
-    if desc:
-        # HTML 태그 제거
-        text = re.sub(r"<[^>]+>", "", desc.group(1)).strip()
-        result["description"] = text
-
-    inp = re.search(r"### 입력\s*\n+([\s\S]+?)(?=\n###|\Z)", readme_text)
-    if inp:
-        text = re.sub(r"<[^>]+>", "", inp.group(1)).strip()
-        result["input"] = text
-
-    out = re.search(r"### 출력\s*\n+([\s\S]+?)(?=\n###|\Z)", readme_text)
-    if out:
-        text = re.sub(r"<[^>]+>", "", out.group(1)).strip()
-        result["output"] = text
+        raw = re.sub(r"<[^>]+>", "", cat.group(1)).strip()
+        result["tags"] = [t.strip() for t in raw.split(",") if t.strip()]
 
     return result
 
 
-def post_exists(num):
-    posts_dir = "_posts"
-    if not os.path.isdir(posts_dir):
-        return False
-    return any(f"baekjoon-{num}" in f for f in os.listdir(posts_dir))
+def post_path(num, date_str):
+    return f"_posts/{date_str}-baekjoon-{num}.md"
 
 
-def create_post(tier, num, title, code, readme_text, date_str, ext):
+def find_existing_post(num):
+    """이미 만들어진 포스트 파일 경로 반환 (날짜 무관)"""
+    if not os.path.isdir("_posts"):
+        return None
+    for f in os.listdir("_posts"):
+        if f"baekjoon-{num}" in f:
+            return os.path.join("_posts", f)
+    return None
+
+
+def readme_hash(readme_text):
+    return hashlib.md5(readme_text.encode()).hexdigest()
+
+
+def read_stored_hash(post_file):
+    """포스트 front matter에서 저장된 README 해시 읽기"""
+    try:
+        with open(post_file, encoding="utf-8") as f:
+            content = f.read()
+        m = re.search(r"^readme_hash:\s*(.+)$", content, re.MULTILINE)
+        return m.group(1).strip() if m else None
+    except FileNotFoundError:
+        return None
+
+
+def create_or_update_post(tier, num, title, readme_text, code_text, date_str, ext):
     lang_map = {"cpp": "cpp", "cc": "cpp", "java": "java", "py": "python",
                 "kt": "kotlin", "js": "javascript", "ts": "typescript"}
     lang_display_map = {"cpp": "C++", "cc": "C++", "java": "Java", "py": "Python",
@@ -86,25 +122,21 @@ def create_post(tier, num, title, code, readme_text, date_str, ext):
     lang = lang_map.get(ext, ext)
     lang_display = lang_display_map.get(ext, ext)
 
-    info = parse_readme(readme_text)
-    boj_url = f"https://www.acmicpc.net/problem/{num}"
-    filename = f"_posts/{date_str}-baekjoon-{num}.md"
+    current_hash = readme_hash(readme_text)
+    existing = find_existing_post(num)
 
-    desc_block = ""
-    if info["description"]:
-        desc_block = info["description"]
-    if info["input"]:
-        desc_block += f"\n\n**입력**\n\n{info['input']}"
-    if info["output"]:
-        desc_block += f"\n\n**출력**\n\n{info['output']}"
+    if existing and read_stored_hash(existing) == current_hash:
+        return "skip"
 
-    perf_line = f"\n> {info['performance']}" if info["performance"] else ""
+    meta = extract_meta(readme_text)
+    tags_yaml = ", ".join(meta["tags"]) if meta["tags"] else ""
+    body = readme_to_post_body(readme_text)
 
-    # 분류를 tags 배열로 변환
-    algo_tags = ["baekjoon", tier.lower()]
-    if info["categories"]:
-        algo_tags += [t.strip() for t in info["categories"].split(",")]
-    tags_yaml = ", ".join(algo_tags)
+    # 코드 블록이 README에 없으면 자동 삽입
+    if code_text and "```" not in body:
+        body += f"\n\n### 코드 ({lang_display})\n\n```{lang}\n{code_text.strip()}\n```"
+
+    filepath = existing if existing else post_path(num, date_str)
 
     content = f"""---
 layout: post
@@ -113,68 +145,81 @@ date: {date_str} 00:00:00 +0900
 categories: algorithm
 tags: [{tags_yaml}]
 toc: true
-excerpt: "백준 {num}번 {title} 풀이입니다."
+readme_hash: {current_hash}
 ---
 
-## 문제 링크
-
-[{num}번: {title}]({boj_url}){perf_line}
-
-## 문제 설명
-
-{desc_block if desc_block else "<!-- 문제 설명 -->"}
-
-## 풀이 전략 (Approach)
-
-<!-- ✏️ TODO: 풀이 전략을 직접 작성해주세요 -->
-
-## 코드 ({lang_display})
-
-```{lang}
-{code.strip()}
-```
+{body}
 """
 
     os.makedirs("_posts", exist_ok=True)
-    with open(filename, "w", encoding="utf-8") as f:
+    with open(filepath, "w", encoding="utf-8") as f:
         f.write(content)
-    print(f"생성됨: {filename}")
+
+    return "updated" if existing else "created"
 
 
 def main():
     commits = get_recent_commits()
-    created = 0
+    created = updated = skipped = 0
+
+    # 커밋별로 코드 파일과 README 파일을 매핑
+    seen_nums = set()
 
     for commit in commits:
         sha = commit["sha"]
         date_str = commit["commit"]["author"]["date"][:10]
         files = get_commit_files(sha)
 
-        # 같은 커밋의 코드파일과 README를 함께 처리
         code_files = {}
         readme_files = {}
 
         for f in files:
             filepath = f.get("filename", "")
-            tier, num, title, ext = parse_path(filepath)
+            tier, num, title, ext = parse_code_path(filepath)
             if num:
                 code_files[num] = {"tier": tier, "title": title, "ext": ext,
                                    "raw_url": f.get("raw_url", ""), "date": date_str}
-            elif re.match(r"백준/[^/]+/(\d+)\..+/README\.md$", filepath):
-                m = re.match(r"백준/[^/]+/(\d+)\.", filepath)
-                if m:
-                    readme_files[m.group(1)] = f.get("raw_url", "")
+            else:
+                r_tier, r_num, r_title = parse_readme_path(filepath)
+                if r_num:
+                    readme_files[r_num] = {"raw_url": f.get("raw_url", ""),
+                                           "tier": r_tier, "title": r_title, "date": date_str}
 
-        for num, info in code_files.items():
-            if post_exists(num):
+        # 코드 또는 README가 있는 문제 처리
+        all_nums = set(code_files.keys()) | set(readme_files.keys())
+        for num in all_nums:
+            if num in seen_nums:
                 continue
-            code = get_raw(info["raw_url"])
-            readme_text = get_raw(readme_files[num]) if num in readme_files else ""
-            create_post(info["tier"], num, info["title"], code, readme_text,
-                        info["date"], info["ext"])
-            created += 1
+            seen_nums.add(num)
 
-    print(f"총 {created}개의 포스트가 새로 생성되었습니다.")
+            code_info = code_files.get(num, {})
+            readme_info = readme_files.get(num, code_info)
+
+            tier = code_info.get("tier") or readme_info.get("tier", "")
+            title = code_info.get("title") or readme_info.get("title", num)
+            ext = code_info.get("ext", "cpp")
+            date = code_info.get("date") or readme_info.get("date", date_str)
+
+            readme_url = readme_info.get("raw_url", "")
+            code_url = code_info.get("raw_url", "")
+
+            readme_text = get_raw(readme_url) if readme_url else ""
+            code_text = get_raw(code_url) if code_url else ""
+
+            if not readme_text:
+                continue
+
+            result = create_or_update_post(tier, num, title, readme_text, code_text, date, ext)
+            if result == "created":
+                print(f"생성됨: {num}번 {title}")
+                created += 1
+            elif result == "updated":
+                print(f"업데이트됨: {num}번 {title}")
+                updated += 1
+            else:
+                skipped += 1
+
+    print(f"\n생성: {created}개 | 업데이트: {updated}개 | 변경 없음: {skipped}개")
 
 
 if __name__ == "__main__":
