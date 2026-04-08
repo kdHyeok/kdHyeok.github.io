@@ -16,6 +16,51 @@
 }
 
 /* =============================================
+   알고리즘 포스트 정보 박스
+   ============================================= */
+.post-info-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 10px 16px;
+  margin-bottom: 1.2rem;
+  background: var(--card-bg, #f8f9fa);
+  border: 1px solid var(--card-border-color, #e1e4e8);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-muted-color, #666);
+}
+
+/* =============================================
+   알고리즘 포스트 최상단 태그
+   ============================================= */
+.post-tags-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.post-tag {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: #f1f8ff;
+  color: #0366d6 !important;
+  border: 1px solid #c8e1ff;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none !important;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: #0366d6;
+    color: white !important;
+    border-color: #0366d6;
+  }
+}
+
+/* =============================================
    포트폴리오 / 프로젝트 카드
    ============================================= */
 .project-grid {

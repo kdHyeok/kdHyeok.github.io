@@ -52,21 +52,61 @@ def parse_readme_path(filepath):
     return None, None, None
 
 
-def readme_to_post_body(readme_text):
+def extract_section(text, heading):
+    """### heading 섹션 내용을 추출하고 원문에서 제거한 텍스트도 반환"""
+    pattern = rf"### {heading}\s*\n([\s\S]+?)(?=\n###|\Z)"
+    m = re.search(pattern, text)
+    value = re.sub(r"<[^>]+>", "", m.group(1)).strip() if m else ""
+    cleaned = re.sub(pattern, "", text).strip()
+    return value, cleaned
+
+
+def readme_to_post_body(readme_text, tags):
     """
     BaekjoonHub README를 Jekyll 포스트 본문으로 변환.
-    - 첫 번째 h1 제거 (제목은 front matter에서 사용)
-    - HTML 태그는 Jekyll에서 그대로 렌더링됨
-    - 사용자가 추가한 섹션(풀이 전략 등) 유지
+    - 첫 번째 h1 제거
+    - ### 분류 / 성능 요약 / 제출 일자 섹션 제거
+    - 최상단에 태그 링크 + 정보 박스 삽입
     """
     lines = readme_text.splitlines()
-    # 첫 번째 # 제목 제거
     start = 0
     for i, line in enumerate(lines):
         if line.startswith("# "):
             start = i + 1
             break
-    return "\n".join(lines[start:]).strip()
+    body = "\n".join(lines[start:]).strip()
+
+    # 섹션 추출 및 제거
+    performance, body = extract_section(body, "성능 요약")
+    submitted,   body = extract_section(body, "제출 일자")
+    _,           body = extract_section(body, "분류")
+
+    # 정보 박스 (성능 요약 + 제출 일자)
+    info_items = []
+    if performance:
+        info_items.append(f'<span>💾 {performance}</span>')
+    if submitted:
+        info_items.append(f'<span>📅 {submitted}</span>')
+    info_box = ""
+    if info_items:
+        info_box = (
+            '<div class="post-info-box">'
+            + "".join(info_items)
+            + "</div>\n\n"
+        )
+
+    # 태그 링크 블록
+    tag_block = ""
+    if tags:
+        def slugify(t):
+            return re.sub(r"[\s/]+", "-", t.strip())
+        tag_links = " ".join(
+            f'<a href="/tags/{slugify(t)}/" class="post-tag">{t}</a>'
+            for t in tags
+        )
+        tag_block = f'<div class="post-tags-top">{tag_links}</div>\n\n'
+
+    return tag_block + info_box + body
 
 
 def extract_meta(readme_text):
@@ -130,7 +170,7 @@ def create_or_update_post(tier, num, title, readme_text, code_text, date_str, ex
 
     meta = extract_meta(readme_text)
     tags_yaml = ", ".join(meta["tags"]) if meta["tags"] else ""
-    body = readme_to_post_body(readme_text)
+    body = readme_to_post_body(readme_text, meta["tags"])
 
     # 코드 블록이 README에 없으면 자동 삽입
     if code_text and "```" not in body:
@@ -145,6 +185,7 @@ date: {date_str} 00:00:00 +0900
 categories: algorithm
 tags: [{tags_yaml}]
 toc: true
+permalink: /algorithm/boj/{num}/
 readme_hash: {current_hash}
 ---
 

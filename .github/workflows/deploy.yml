@@ -27,37 +27,45 @@ jobs:
       - name: Install Python Dependencies
         run: pip install requests PyYAML
 
-      - name: Update Data
+      - name: Update GitHub Data
         run: python update_projects.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2. 변경된 데이터를 다시 저장소에 커밋
-      - name: Commit and Push Changes
+      # 2. 변경된 데이터를 저장소에 커밋
+      - name: Commit and Push Data Changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add _data/github_data.yml
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update github data" && git push)
+          git add _data/github_data.yml _data/contact.yml
+          git diff --staged --quiet || (git commit -m "chore: update github data" && git push)
 
-      # 3. Ruby 환경 세팅 (Jekyll 빌드용)
+      # 3. Algorithms 레포 README → _posts/ 생성 (커밋하지 않음)
+      - name: Generate Algorithm Posts from README
+        run: python create_algo_post.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 4. Ruby 환경 세팅 (Jekyll 빌드용)
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
-          bundle-cache: true # 빌드 속도를 위해 캐시 사용
+          bundle-cache: true
 
-      # 4. Jekyll 빌드 (수동 빌드 방식)
+      # 5. Jekyll 빌드
       - name: Install Bundler & Build
         run: |
           bundle install
           bundle exec jekyll build
 
-      # 5. 빌드 결과물 업로드
+      # 6. 빌드 결과물 업로드
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./_site
 
-      # 6. 배포
+      # 7. 배포
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
