@@ -1,3 +1,6 @@
+---
+layout: home
+---
 <h2 class="section-title">⭐ Featured Portfolios</h2>
 <p class="section-desc">가장 핵심적인 프로젝트들입니다. 이미지와 배포 링크가 포함되어 있습니다.</p>
 
