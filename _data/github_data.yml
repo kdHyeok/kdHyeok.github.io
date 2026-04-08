@@ -18,11 +18,7 @@ algorithms:
   language: C++
 baekjoon:
   tier: 7
-<<<<<<< HEAD
-  rank: 111289
-=======
   rank: 111291
->>>>>>> 7c0845f (일부 누락 수정)
   solved_count: 39
   streak: 3
   tier_image: https://static.solved.ac/tier_small/7.svg
