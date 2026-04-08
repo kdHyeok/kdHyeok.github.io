@@ -11,22 +11,26 @@ projects:
   pages_url: https://kdHyeok.github.io/ssafy_ai_2/
   description: ai 챌린지 참여 파일
   language: Jupyter Notebook
-algorithms:
-- name: Algorithms
-  repo_url: https://github.com/kdHyeok/Algorithms
-  pages_url: https://kdHyeok.github.io/Algorithms/
-  description: 설명이 없습니다.
-  language: C++
+algorithms: []
 baekjoon:
   tier: 7
-  rank: 111316
+  rank: 111317
   solved_count: 39
   streak: 3
   tier_image: https://static.solved.ac/tier_small/7.svg
 recent_solved:
-- name: 11438. LCA 2
-  tier: Platinum
-  url: https://github.com/kdHyeok/Algorithms/tree/main/%EB%B0%B1%EC%A4%80/Platinum/11438.%E2%80%85LCA%E2%80%852
-- name: 30467. 등불 날리기
-  tier: Platinum
-  url: https://github.com/kdHyeok/Algorithms/tree/main/%EB%B0%B1%EC%A4%80/Platinum/30467.%E2%80%85%EB%93%B1%EB%B6%88%E2%80%85%EB%82%A0%EB%A6%AC%EA%B8%B0
+- name: 18870. 좌표 압축 (Silver)
+  tier: C++17
+  url: https://github.com/kdHyeok/Algorithms/tree/main/%EB%B0%B1%EC%A4%80/C%2B%2B17/18870.%20%EC%A2%8C%ED%91%9C%E2%80%85%EC%95%95%EC%B6%95%20(Silver)
+- name: 1914. 하노이 탑 (Gold)
+  tier: C++17
+  url: https://github.com/kdHyeok/Algorithms/tree/main/%EB%B0%B1%EC%A4%80/C%2B%2B17/1914.%20%ED%95%98%EB%85%B8%EC%9D%B4%E2%80%85%ED%83%91%20(Gold)
+- name: 2042. 구간 합 구하기 (Gold)
+  tier: C++17
+  url: https://github.com/kdHyeok/Algorithms/tree/main/%EB%B0%B1%EC%A4%80/C%2B%2B17/2042.%20%EA%B5%AC%EA%B0%84%E2%80%85%ED%95%A9%E2%80%85%EA%B5%AC%ED%95%98%EA%B8%B0%20(Gold)
+- name: 2357. 최솟값과 최댓값 (Gold)
+  tier: C++17
+  url: https://github.com/kdHyeok/Algorithms/tree/main/%EB%B0%B1%EC%A4%80/C%2B%2B17/2357.%20%EC%B5%9C%EC%86%9F%EA%B0%92%EA%B3%BC%E2%80%85%EC%B5%9C%EB%8C%93%EA%B0%92%20(Gold)
+- name: 2517. 달리기 (Platinum)
+  tier: C++17
+  url: https://github.com/kdHyeok/Algorithms/tree/main/%EB%B0%B1%EC%A4%80/C%2B%2B17/2517.%20%EB%8B%AC%EB%A6%AC%EA%B8%B0%20(Platinum)

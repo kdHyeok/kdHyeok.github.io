@@ -125,6 +125,16 @@ def main():
         elif 'project' in topics:
             data['projects'].append(repo_info)
         elif 'algorithm' in topics:
+            # 언어 비율 조회
+            lang_resp = requests.get(
+                f"https://api.github.com/repos/{USERNAME}/{repo_name}/languages",
+                headers=get_headers()
+            )
+            languages = lang_resp.json() if lang_resp.status_code == 200 else {}
+            total = sum(languages.values()) or 1
+            lang_ratio = {k: round(v / total * 100, 1) for k, v in
+                          sorted(languages.items(), key=lambda x: -x[1])}
+            repo_info['languages'] = lang_ratio
             data['algorithms'].append(repo_info)
 
     # 3. 백준 통계 추가

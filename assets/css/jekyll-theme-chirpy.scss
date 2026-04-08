@@ -168,6 +168,148 @@
 }
 
 /* =============================================
+   알고리즘 통계 행 (Boj 레벨 + 레포 언어 비율)
+   ============================================= */
+.algo-stats-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding: 20px;
+  background: var(--card-bg, #f8f9fa);
+  border: 1px solid var(--card-border-color, #e1e4e8);
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.algo-stats-boj {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 160px;
+
+  p { margin: 2px 0; font-size: 14px; }
+}
+
+.algo-stats-repo {
+  flex: 1;
+  min-width: 200px;
+}
+
+.algo-repo-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none !important;
+  margin-bottom: 10px;
+  color: var(--link-color, #0366d6) !important;
+}
+
+.algo-lang-bars { display: flex; flex-direction: column; gap: 6px; }
+
+.algo-lang-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.algo-lang-name {
+  width: 60px;
+  color: var(--text-muted-color, #666);
+  white-space: nowrap;
+}
+
+.algo-lang-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: var(--card-border-color, #e1e4e8);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.algo-lang-bar-fill {
+  height: 100%;
+  background: #0366d6;
+  border-radius: 999px;
+}
+
+.algo-lang-pct {
+  width: 36px;
+  text-align: right;
+  color: var(--text-muted-color, #999);
+}
+
+/* =============================================
+   알고리즘 필터 바
+   ============================================= */
+.algo-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.algo-filter-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.algo-filter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted-color, #888);
+  margin-right: 4px;
+}
+
+.algo-filter-btn {
+  padding: 4px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border-color, #e1e4e8);
+  background: var(--card-bg, #fff);
+  color: var(--text-muted-color, #555);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  &:hover, &.active {
+    background: #0366d6;
+    color: white;
+    border-color: #0366d6;
+  }
+}
+
+/* 플랫폼 배지 */
+.algo-platform-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+}
+.algo-platform-baekjoon {
+  background: #e8f4fd;
+  color: #0550ae;
+}
+.algo-platform-swea {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.algo-lang-badge-sm {
+  font-size: 11px;
+  color: var(--text-muted-color, #888);
+  border: 1px solid var(--card-border-color, #ddd);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+/* =============================================
    알고리즘 풀이 포스트 카드
    ============================================= */
 .algo-card-grid {

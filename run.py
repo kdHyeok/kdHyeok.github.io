@@ -5,11 +5,19 @@ import os
 def run_update_script():
     print("--- 1. GitHub 데이터 업데이트 시작 ---")
     try:
-        # 현재 디렉토리에 있는 update_projects.py 실행
-        result = subprocess.run([sys.executable, "update_projects.py"], check=True)
+        subprocess.run([sys.executable, "update_projects.py"], check=True)
         print("--- 데이터 업데이트 완료 ---\n")
     except subprocess.CalledProcessError as e:
         print(f"에러 발생: 데이터 업데이트 중 문제가 발생했습니다. ({e})")
+        sys.exit(1)
+
+def run_algo_post_script():
+    print("--- 2. 알고리즘 포스트 생성 시작 ---")
+    try:
+        subprocess.run([sys.executable, "create_algo_post.py"], check=True)
+        print("--- 알고리즘 포스트 생성 완료 ---\n")
+    except subprocess.CalledProcessError as e:
+        print(f"에러 발생: 알고리즘 포스트 생성 중 문제가 발생했습니다. ({e})")
         sys.exit(1)
 
 def start_jekyll_server():
@@ -27,4 +35,5 @@ def start_jekyll_server():
 
 if __name__ == "__main__":
     run_update_script()
+    run_algo_post_script()
     start_jekyll_server()

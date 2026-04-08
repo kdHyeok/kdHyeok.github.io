@@ -40,32 +40,38 @@ jobs:
           git add _data/github_data.yml _data/contact.yml
           git diff --staged --quiet || (git commit -m "chore: update github data" && git push)
 
-      # 3. Algorithms 레포 README → _posts/ 생성 (커밋하지 않음)
+      # 3. Algorithms 레포 README → _posts/ 생성 (해시 비교로 변경된 것만 업데이트)
       - name: Generate Algorithm Posts from README
         run: python create_algo_post.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 4. Ruby 환경 세팅 (Jekyll 빌드용)
+      # 4. 변경된 알고리즘 포스트만 커밋
+      - name: Commit Algorithm Posts
+        run: |
+          git add _posts/*-boj-*.md _posts/*-swea-*.md 2>/dev/null || true
+          git diff --staged --quiet || (git commit -m "chore: update algorithm posts" && git push)
+
+      # 6. Ruby 환경 세팅 (Jekyll 빌드용)
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
           bundle-cache: true
 
-      # 5. Jekyll 빌드
+      # 7. Jekyll 빌드
       - name: Install Bundler & Build
         run: |
           bundle install
           bundle exec jekyll build
 
-      # 6. 빌드 결과물 업로드
+      # 9. 빌드 결과물 업로드
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./_site
 
-      # 7. 배포
+      # 10. 배포
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
