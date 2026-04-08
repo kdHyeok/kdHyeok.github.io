@@ -1,45 +1,34 @@
----
-layout: home
----
+<h2 class="section-title">⭐ Featured Portfolios</h2>
+<p class="section-desc">가장 핵심적인 프로젝트들입니다. 이미지와 배포 링크가 포함되어 있습니다.</p>
 
-## 🚀 Featured Projects
-실제 개발하고 구현한 프로젝트들입니다.
-<ul>
+<div class="portfolio-grid">
+  {% for item in site.data.github_data.portfolios %}
+  <div class="portfolio-card">
+    <div class="card-content">
+      <span class="lang-badge">{{ item.language }}</span>
+      <h3>{{ item.name }}</h3>
+      <p>{{ item.description }}</p>
+      <div class="card-links">
+        <a href="{{ item.pages_url }}" target="_blank" class="btn-demo">Live Demo</a>
+        <a href="{{ item.repo_url }}" target="_blank" class="btn-github">GitHub</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<hr class="divider">
+
+<h2 class="section-title">🛠️ Other Projects</h2>
+<p class="section-desc">학습 및 기술 스택 연습을 위해 진행한 프로젝트들입니다.</p>
+
+<ul class="project-list">
   {% for item in site.data.github_data.projects %}
-   <a href="{{ item.pages_url }}" target="_blank">View Page</a>
-{% endfor %}
-</ul>
-
----
-
-## 📝 Algorithm & Study
-매일 해결한 알고리즘 문제와 학습 기록입니다.
-<ul>
-  {% for item in site.data.github_data.algorithms %}
-    <li>
-      <a href="{{ item.url }}">{{ item.name }}</a> - {{ item.description }}
-    </li>
+  <li>
+    <span class="project-date">{{ item.updated }}</span>
+    <a href="{{ item.repo_url }}" target="_blank"><strong>{{ item.name }}</strong></a>
+    <span class="project-lang">[{{ item.language }}]</span>
+    <p class="project-desc">{{ item.description }}</p>
+  </li>
   {% endfor %}
 </ul>
-
-### 🚩 최근 해결한 문제 (Latest Solved)
-<ul>
-  {% for prob in site.data.github_data.recent_solved reversed %}
-    <li>
-      <span class="label">{{ prob.tier }}</span> 
-      <a href="{{ prob.url }}" target="_blank">{{ prob.name }}</a>
-    </li>
-  {% endfor %}
-</ul>
-
-<style>
-  .label {
-    display: inline-block;
-    padding: 2px 8px;
-    font-size: 12px;
-    background: #000;
-    color: #fff;
-    border-radius: 4px;
-    margin-right: 5px;
-  }
-</style>

@@ -3,8 +3,8 @@ import yaml
 import os
 
 # 1. 설정 정보
-USERNAME = "kdHyeok"  # GitHub 아이디
-BOJ_ID = "kimdh219"   # 백준(Solved.ac) 아이디
+USERNAME = "kdHyeok"
+BOJ_ID = "kimdh219"
 ALGO_REPO = "Algorithms"
 
 def get_github_repos():
@@ -13,7 +13,6 @@ def get_github_repos():
     return response.json()
 
 def get_solved_ac_stats():
-    # USERNAME이 아니라 BOJ_ID를 사용해야 정확합니다.
     url = f"https://solved.ac/api/v3/user/show?handle={BOJ_ID}"
     try:
         response = requests.get(url)
@@ -24,29 +23,24 @@ def get_solved_ac_stats():
         return None
     
 def get_recent_problems():
-    # '백준' 폴더 내부의 티어 폴더들을 가져옵니다.
     url = f"https://api.github.com/repos/{USERNAME}/{ALGO_REPO}/contents/백준"
     response = requests.get(url)
     if response.status_code != 200: return []
 
     problems = []
-    tiers = response.json() # [Bronze, Silver, Gold, Platinum...]
+    tiers = response.json()
     
     for tier in tiers:
         if tier['type'] == 'dir':
-            # 각 티어 폴더 내부의 문제 폴더를 가져옵니다.
             t_url = tier['url']
             t_res = requests.get(t_url).json()
             for p in t_res:
                 if p['type'] == 'dir':
                     problems.append({
-                        'name': p['name'], # "11438. LCA 2"
-                        'tier': tier['name'], # "Platinum"
+                        'name': p['name'],
+                        'tier': tier['name'],
                         'url': p['html_url']
                     })
-    
-    # 최근에 추가된 순서대로 정렬하고 싶지만, API 특성상 이름순일 확률이 높습니다.
-    # 일단은 전체 리스트를 반환합니다.
     return problems
 
 def main():
@@ -54,22 +48,22 @@ def main():
     stats = get_solved_ac_stats()
     recent_problems = get_recent_problems()
 
-    # 결과 데이터를 담을 최종 구조
+    # 결과 데이터를 담을 최종 구조 (portfolios 추가)
     data = {
-        "projects": [],
-        "algorithms": [],
+        "portfolios": [],    # 'portfolio' 태그 (핵심 작업물)
+        "projects": [],      # 'project' 태그 (일반 개발 활동)
+        "algorithms": [],    # 'algorithm' 태그
         "baekjoon": {},
-        "recent_solved": recent_problems[-5:] # 최신 5개 (순서는 로컬 테스트 필요)
+        "recent_solved": recent_problems[-5:]
     }
 
-    # 2. 깃허브 레포지토리 분류
+    # 2. 깃허브 레포지토리 분류 로직
     for repo in repos:
         if repo.get('fork'): continue
         
         topics = repo.get('topics', [])
         repo_name = repo['name']
         
-        # URL 생성 로직
         if repo_name.lower() == f"{USERNAME.lower()}.github.io":
             generated_pages_url = f"https://{USERNAME}.github.io/"
         else:
@@ -83,12 +77,15 @@ def main():
             'language': repo['language']
         }
 
+        # 우선순위에 따른 분류 (하나의 레포가 여러 태그를 가질 경우 대비)
         if 'portfolio' in topics:
+            data['portfolios'].append(repo_info)
+        elif 'project' in topics:
             data['projects'].append(repo_info)
         elif 'algorithm' in topics:
             data['algorithms'].append(repo_info)
 
-    # 3. 백준 통계 추가 (루프 밖에서 한 번만 수행)
+    # 3. 백준 통계 추가
     if stats:
         data['baekjoon'] = {
             "tier": stats.get('tier'),
