@@ -1,0 +1,36 @@
+name: Auto Create Algorithm Posts
+
+on:
+  schedule:
+    - cron: '30 20 * * *'   # 매일 새벽 5시 30분 (KST), deploy.yml 이후 실행
+  workflow_dispatch:          # 수동 실행도 허용
+
+permissions:
+  contents: write
+
+jobs:
+  create-posts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: pip install requests
+
+      - name: Create Algorithm Posts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python create_algo_post.py
+
+      - name: Commit and Push New Posts
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add _posts/
+          git diff --staged --quiet || (git commit -m "chore: auto-add algorithm posts" && git push)
