@@ -1,15 +1,15 @@
 portfolios:
-- name: ssafy_ai_2
-  repo_url: https://github.com/kdHyeok/ssafy_ai_2
-  pages_url: https://kdHyeok.github.io/ssafy_ai_2/
-  description: 설명이 없습니다.
-  language: Jupyter Notebook
 - name: Web_Profile
   repo_url: https://github.com/kdHyeok/Web_Profile
   pages_url: https://kdHyeok.github.io/Web_Profile/
   description: 웹 포트폴리오
   language: HTML
-projects: []
+projects:
+- name: ssafy_ai_2
+  repo_url: https://github.com/kdHyeok/ssafy_ai_2
+  pages_url: https://kdHyeok.github.io/ssafy_ai_2/
+  description: 설명이 없습니다.
+  language: Jupyter Notebook
 algorithms:
 - name: Algorithms
   repo_url: https://github.com/kdHyeok/Algorithms
@@ -18,7 +18,11 @@ algorithms:
   language: C++
 baekjoon:
   tier: 7
+<<<<<<< HEAD
   rank: 111289
+=======
+  rank: 111291
+>>>>>>> 7c0845f (일부 누락 수정)
   solved_count: 39
   streak: 3
   tier_image: https://static.solved.ac/tier_small/7.svg

@@ -25,3 +25,15 @@ permalink: /algorithm/
 * **주요 언어:** {{ item.language }}
 * **풀이 보러가기:** [GitHub Repository]({{ item.repo_url }})
 {% endfor %}
+
+---
+
+## 🕐 Recently Solved Problems
+<ul>
+{% for problem in site.data.github_data.recent_solved %}
+  <li>
+    <a href="{{ problem.url }}" target="_blank"><strong>{{ problem.name }}</strong></a>
+    <span style="margin-left: 8px; font-size: 0.85em; color: #888;">{{ problem.tier }}</span>
+  </li>
+{% endfor %}
+</ul>
