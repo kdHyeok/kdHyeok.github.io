@@ -17,7 +17,7 @@ tabs:
   about: 소개
   projects: 프로젝트
   algorithm: 알고리즘
-  chatter: 잡담
+  daily: 일상
 
 # the text displayed in the search bar & search results
 search:

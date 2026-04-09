@@ -8,6 +8,7 @@ import requests
 import os
 import re
 import hashlib
+from datetime import datetime, timezone
 
 USERNAME = "kdHyeok"
 ALGO_REPO = "Algorithms"
@@ -46,8 +47,24 @@ def get_headers():
     return {"Authorization": f"token {token}"} if token else {}
 
 
-def get_recent_commits():
+SYNC_TIMESTAMP_FILE = "_data/algo_last_sync.txt"
+
+def read_last_sync():
+    try:
+        with open(SYNC_TIMESTAMP_FILE, encoding="utf-8") as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        return None
+
+def write_last_sync(ts):
+    os.makedirs("_data", exist_ok=True)
+    with open(SYNC_TIMESTAMP_FILE, "w", encoding="utf-8") as f:
+        f.write(ts)
+
+def get_recent_commits(since=None):
     url = f"https://api.github.com/repos/{USERNAME}/{ALGO_REPO}/commits?per_page=100"
+    if since:
+        url += f"&since={since}"
     resp = requests.get(url, headers=get_headers())
     return resp.json() if resp.status_code == 200 else []
 
@@ -61,6 +78,39 @@ def get_commit_files(sha):
 def get_raw(raw_url):
     resp = requests.get(raw_url, headers=get_headers())
     return resp.text if resp.status_code == 200 else ""
+
+
+PLATFORM_DIR = {"baekjoon": "백준", "swea": "SWEA"}
+
+def fetch_code_from_repo(platform, tier, num, title):
+    """코드 파일이 커밋에 없을 때 Contents API로 직접 가져옴"""
+    from urllib.parse import quote as urlquote
+    base = PLATFORM_DIR.get(platform["oj"], platform["oj"])
+
+    def try_folder(folder_path):
+        encoded = "/".join(urlquote(seg, safe="") for seg in folder_path.split("/"))
+        url = f"https://api.github.com/repos/{USERNAME}/{ALGO_REPO}/contents/{encoded}"
+        resp = requests.get(url, headers=get_headers())
+        if resp.status_code != 200 or not isinstance(resp.json(), list):
+            return "", None
+        for item in resp.json():
+            name = item.get("name", "")
+            ext = name.rsplit(".", 1)[-1].lower() if "." in name else ""
+            if ext in LANG_MAP and name.upper() != "README.MD":
+                raw_url = item.get("download_url", "")
+                code = get_raw(raw_url) if raw_url else ""
+                return code, ext
+        return "", None
+
+    candidates = [
+        f"{base}/{tier}/{num}. {title}",
+        f"{base}/{num}. {title}",
+    ]
+    for folder in candidates:
+        code, ext = try_folder(folder)
+        if code:
+            return code, ext
+    return "", None
 
 
 def match_platform(filepath):
@@ -138,11 +188,11 @@ def readme_hash(text):
 
 
 def find_existing_post(prefix, num):
-    if not os.path.isdir("_posts"):
-        return None
-    for f in os.listdir("_posts"):
-        if f"{prefix}-{num}" in f:
-            return os.path.join("_posts", f)
+    folder = f"_posts/{prefix}"
+    if os.path.isdir(folder):
+        for f in os.listdir(folder):
+            if f"{prefix}-{num}" in f:
+                return os.path.join(folder, f)
     return None
 
 
@@ -165,7 +215,10 @@ def create_or_update_post(platform, tier, num, title, readme_text, code_text, da
     existing = find_existing_post(prefix, num)
 
     if existing and read_stored_hash(existing) == current_hash:
-        return "skip"
+        with open(existing, encoding="utf-8") as f:
+            existing_content = f.read()
+        if "```" in existing_content:
+            return "skip"
 
     meta = extract_meta(readme_text)
     tags_yaml = ", ".join(meta["tags"]) if meta["tags"] else ""
@@ -174,7 +227,8 @@ def create_or_update_post(platform, tier, num, title, readme_text, code_text, da
     if code_text and "```" not in body:
         body += f"\n\n### 코드 ({lang_disp})\n\n```{lang}\n{code_text.strip()}\n```"
 
-    filepath = existing if existing else f"_posts/{date_str}-{prefix}-{num}.md"
+    folder = f"_posts/{prefix}"
+    filepath = existing if existing else f"{folder}/{date_str}-{prefix}-{num}.md"
     permalink = platform["permalink"].format(num=num)
     post_title = platform["title_fmt"].format(num=num, title=title, lang=lang_disp)
 
@@ -194,7 +248,7 @@ readme_hash: {current_hash}
 {body}
 """
 
-    os.makedirs("_posts", exist_ok=True)
+    os.makedirs(folder, exist_ok=True)
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(content)
 
@@ -202,7 +256,16 @@ readme_hash: {current_hash}
 
 
 def main():
-    commits = get_recent_commits()
+    last_sync = read_last_sync()
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    if last_sync:
+        print(f"마지막 동기화: {last_sync} 이후 커밋만 조회합니다.")
+    else:
+        print("첫 실행: 최근 커밋 100개를 모두 조회합니다.")
+
+    commits = get_recent_commits(since=last_sync)
+    print(f"처리할 커밋: {len(commits)}개")
     created = updated = skipped = 0
     seen = set()  # (prefix, num)
 
@@ -249,6 +312,12 @@ def main():
             if not readme_text:
                 continue
 
+            if not code_text:
+                fetched_code, fetched_ext = fetch_code_from_repo(platform, tier, key[1], title)
+                if fetched_code:
+                    code_text = fetched_code
+                    ext = fetched_ext or ext
+
             result = create_or_update_post(platform, tier, key[1], title,
                                            readme_text, code_text, date, ext)
             label = platform["label"]
@@ -262,6 +331,8 @@ def main():
                 skipped += 1
 
     print(f"\n생성: {created}개 | 업데이트: {updated}개 | 변경 없음: {skipped}개")
+    write_last_sync(now)
+    print(f"동기화 시각 저장: {now}")
 
 
 if __name__ == "__main__":

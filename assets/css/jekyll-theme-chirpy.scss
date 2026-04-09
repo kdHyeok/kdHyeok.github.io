@@ -16,6 +16,175 @@
 }
 
 /* =============================================
+   다크 모드 색상 팔레트 (One Dark Pro 계열)
+   ============================================= */
+@mixin dark-overrides {
+  --main-bg: #1e2030;
+  --mask-bg: #2d3149;
+  --main-border-color: #2d3149;
+
+  --text-color: #c8ccd4;
+  --text-muted-color: #7a8093;
+  --text-muted-highlight-color: #a0a8bf;
+  --heading-color: #e0e4f0;
+  --label-color: #9ba3bf;
+  --blockquote-border-color: #3b4062;
+  --blockquote-text-color: #7a8093;
+  --link-color: #82aaff;
+  --link-underline-color: #3b4d78;
+  --button-bg: #222536;
+  --btn-border-color: #2d3149;
+  --btn-backtotop-color: var(--text-color);
+  --btn-backtotop-border-color: #2d3149;
+  --card-header-bg: #252840;
+  --card-bg: #222536;
+  --card-hover-bg: #2d3149;
+  --card-shadow: rgb(10 12 30 / 60%) 0 6px 18px 0, rgb(80 90 140 / 15%) 0 0 0 1px;
+
+  --sidebar-bg: #1a1c2e;
+  --sidebar-border-color: #2d3149;
+  --sidebar-muted-color: #7a8093;
+  --sidebar-active-color: #e0e4f0;
+  --sidebar-hover-bg: #252840;
+  --sidebar-btn-bg: #222536;
+  --sidebar-btn-color: #7a8093;
+  --site-title-color: #9ba3bf;
+  --site-subtitle-color: #7a8093;
+  --avatar-border-color: rgb(200 204 212 / 85%);
+
+  --topbar-bg: rgb(30 32 48 / 80%);
+  --topbar-text-color: var(--text-color);
+  --search-border-color: #2d3149;
+  --search-icon-color: #7a8093;
+  --input-focus-border-color: #82aaff;
+
+  --post-list-text-color: #c8ccd4;
+  --btn-patinator-text-color: var(--text-color);
+  --btn-paginator-hover-color: #252840;
+
+  --toc-highlight: #82aaff;
+  --toc-popup-border-color: #2d3149;
+  --tag-hover: #252840;
+  --tag-border: #3b4062;
+  --tag-shadow: #1a1c2e;
+  --search-tag-bg: #252840;
+  --tb-odd-bg: #252840;
+  --tb-even-bg: #1e2030;
+  --tb-border-color: #2d3149;
+  --kbd-wrap-color: #3b4062;
+  --kbd-text-color: #c8ccd4;
+  --kbd-bg-color: #252840;
+
+  --timeline-node-bg: #82aaff;
+  --timeline-color: #2d3149;
+  --timeline-year-dot-color: var(--timeline-color);
+  --dash-color: #3b4062;
+
+  --categories-border: rgb(61 65 98 / 50%);
+  --categories-hover-bg: #2d3149;
+  --categories-icon-hover-color: #e0e4f0;
+
+  --highlight-bg-color: #1a1c2e;
+  --highlighter-rouge-color: #c792ea;
+  --highlight-lineno-color: #4b5280;
+  --inline-code-bg: rgb(130 170 255 / 8%);
+  --code-color: #c8ccd4;
+  --code-header-text-color: #7a8093;
+  --code-header-muted-color: #2d3149;
+  --code-header-icon-color: #4b5280;
+  --language-border-color: #2d3149;
+  --filepath-text-color: #c8ccd4;
+
+  --footnote-target-bg: rgb(130 170 255 / 15%);
+  --btn-share-color: #7a8093;
+  --btn-share-hover-color: #82aaff;
+  --prompt-text-color: rgb(200 204 212 / 80%);
+  --prompt-tip-bg: rgb(195 232 141 / 12%);
+  --prompt-tip-icon-color: #c3e88d;
+  --prompt-info-bg: rgb(130 170 255 / 12%);
+  --prompt-info-icon-color: #82aaff;
+  --prompt-warning-bg: rgb(255 203 107 / 12%);
+  --prompt-warning-icon-color: #ffcb6b;
+  --prompt-danger-bg: rgb(255 85 114 / 12%);
+  --prompt-danger-icon-color: #ff5572;
+}
+
+html[data-mode='dark'] {
+  @include dark-overrides;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-mode]),
+  html[data-mode='dark'] {
+    @include dark-overrides;
+  }
+}
+
+/* =============================================
+   다크 모드 전용 컴포넌트 색상 보정
+   ============================================= */
+@mixin dark-component-overrides {
+  .algo-lang-badge-sm {
+    color: #c8ccd4;
+    border-color: #4b5280;
+    background: #2d3149;
+  }
+
+  .algo-card:hover,
+  .daily-card:hover,
+  .project-card:hover {
+    border-color: #82aaff;
+    box-shadow: 0 8px 20px rgba(130, 170, 255, 0.12);
+  }
+
+  .post-tag,
+  .algo-tier-badge,
+  .daily-tag {
+    background: #252840 !important;
+    color: #82aaff !important;
+    border-color: #3b4d78 !important;
+  }
+
+  .post-tag:hover {
+    background: #2d3149 !important;
+  }
+
+  .algo-platform-baekjoon {
+    background: #1e3a5f;
+    color: #82aaff;
+    border: 1px solid #2d5fa0;
+  }
+
+  .algo-platform-swea {
+    background: #1e3a2a;
+    color: #c3e88d;
+    border: 1px solid #2d6b3e;
+  }
+
+  .algo-filter-btn.active {
+    background: #82aaff;
+    color: #1e2030;
+    border-color: #82aaff;
+  }
+
+  .algo-filter-btn:not(.active):hover {
+    background: #2d3149;
+    border-color: #4b5280;
+  }
+}
+
+html[data-mode='dark'] {
+  @include dark-component-overrides;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-mode]),
+  html[data-mode='dark'] {
+    @include dark-component-overrides;
+  }
+}
+
+/* =============================================
    알고리즘 포스트 정보 박스
    ============================================= */
 .post-info-box {
@@ -374,4 +543,75 @@
   color: var(--text-muted-color, #666);
   margin: 0;
   line-height: 1.5;
+}
+
+/* ── Daily 카드 ── */
+.daily-filter-bar {
+  margin: 16px 0 20px;
+}
+
+.daily-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.daily-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.daily-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--card-border-color, #e1e4e8);
+  border-radius: 10px;
+  overflow: hidden;
+  text-decoration: none !important;
+  color: inherit !important;
+  background: var(--card-bg, #fff);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.daily-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  border-color: #0366d6;
+}
+
+.daily-card-img {
+  width: 100%;
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--card-border-color, #e1e4e8);
+}
+
+.daily-card-body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.daily-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.daily-tag {
+  font-size: 11px;
+  background: var(--tag-bg, #f1f8ff);
+  color: #0366d6;
+  border: 1px solid #c8e1ff;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-weight: 600;
 }

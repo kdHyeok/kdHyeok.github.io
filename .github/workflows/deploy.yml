@@ -25,7 +25,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install Python Dependencies
-        run: pip install requests PyYAML
+        run: pip install requests PyYAML Pillow
 
       - name: Update GitHub Data
         run: python update_projects.py
@@ -49,8 +49,20 @@ jobs:
       # 4. 변경된 알고리즘 포스트만 커밋
       - name: Commit Algorithm Posts
         run: |
-          git add _posts/*-boj-*.md _posts/*-swea-*.md 2>/dev/null || true
+          git add _posts/boj/ _posts/swea/ _data/algo_last_sync.txt 2>/dev/null || true
           git diff --staged --quiet || (git commit -m "chore: update algorithm posts" && git push)
+
+      # 5. Notion DB → _posts/ 잡담 포스트 동기화
+      - name: Generate Chatter Posts from Notion
+        run: python create_chatter_post.py
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DB_ID: ${{ secrets.NOTION_DB_ID }}
+
+      - name: Commit Chatter Posts
+        run: |
+          git add _posts/daily/ assets/img/daily/ 2>/dev/null || true
+          git diff --staged --quiet || (git commit -m "chore: update daily posts" && git push)
 
       # 6. Ruby 환경 세팅 (Jekyll 빌드용)
       - name: Setup Ruby
