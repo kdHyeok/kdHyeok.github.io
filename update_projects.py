@@ -11,6 +11,58 @@ def get_headers():
     token = os.environ.get("GITHUB_TOKEN")
     return {"Authorization": f"token {token}"} if token else {}
 
+
+# 언어 통계에서 제외할 시스템 폴더 (자동화 스크립트, 설정 파일 등)
+ALGO_SYSTEM_DIRS = {".github", "scripts", "docs"}
+
+EXT_TO_LANG = {
+    ".cpp": "C++", ".cc": "C++", ".c": "C",
+    ".java": "Java", ".py": "Python",
+    ".kt": "Kotlin", ".js": "JavaScript", ".ts": "TypeScript",
+    ".go": "Go", ".rs": "Rust", ".rb": "Ruby", ".swift": "Swift",
+}
+
+def get_algo_languages(repo_name):
+    """
+    레포 최상위 폴더를 조회해서 시스템 폴더를 제외한
+    문제 풀이 폴더의 파일 확장자만으로 언어 비율 계산
+    """
+    # 최상위 디렉토리 목록
+    url = f"https://api.github.com/repos/{USERNAME}/{repo_name}/contents/"
+    resp = requests.get(url, headers=get_headers())
+    if resp.status_code != 200:
+        return {}
+
+    problem_dirs = [
+        item["name"] for item in resp.json()
+        if item["type"] == "dir" and item["name"] not in ALGO_SYSTEM_DIRS
+        and not item["name"].startswith(".")
+    ]
+
+    # git trees API로 문제 폴더 내 전체 파일 목록 가져오기
+    tree_url = f"https://api.github.com/repos/{USERNAME}/{repo_name}/git/trees/HEAD?recursive=1"
+    tree_resp = requests.get(tree_url, headers=get_headers())
+    if tree_resp.status_code != 200:
+        return {}
+
+    lang_count = {}
+    for item in tree_resp.json().get("tree", []):
+        if item["type"] != "blob":
+            continue
+        path = item["path"]
+        # 문제 풀이 폴더 하위 파일만 카운트
+        top_dir = path.split("/")[0]
+        if top_dir not in problem_dirs:
+            continue
+        ext = "." + path.rsplit(".", 1)[-1].lower() if "." in path else ""
+        lang = EXT_TO_LANG.get(ext)
+        if lang:
+            lang_count[lang] = lang_count.get(lang, 0) + 1
+
+    total = sum(lang_count.values()) or 1
+    return {k: round(v / total * 100, 1)
+            for k, v in sorted(lang_count.items(), key=lambda x: -x[1])}
+
 def get_github_repos():
     url = f"https://api.github.com/users/{USERNAME}/repos?per_page=100&sort=updated"
     response = requests.get(url, headers=get_headers())
@@ -125,15 +177,7 @@ def main():
         elif 'project' in topics:
             data['projects'].append(repo_info)
         elif 'algorithm' in topics:
-            # 언어 비율 조회
-            lang_resp = requests.get(
-                f"https://api.github.com/repos/{USERNAME}/{repo_name}/languages",
-                headers=get_headers()
-            )
-            languages = lang_resp.json() if lang_resp.status_code == 200 else {}
-            total = sum(languages.values()) or 1
-            lang_ratio = {k: round(v / total * 100, 1) for k, v in
-                          sorted(languages.items(), key=lambda x: -x[1])}
+            lang_ratio = get_algo_languages(repo_name)
             repo_info['languages'] = lang_ratio
             data['algorithms'].append(repo_info)
 
