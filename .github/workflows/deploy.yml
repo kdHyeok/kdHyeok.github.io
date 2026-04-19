@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
   schedule:
-    - cron: '0 20 * * *'
+    - cron: '0 */4 * * *'
 
 permissions:
   contents: write
@@ -40,16 +40,18 @@ jobs:
           git add _data/github_data.yml _data/contact.yml
           git diff --staged --quiet || (git commit -m "chore: update github data" && git push)
 
-      # 3. Algorithms 레포 README → _posts/ 생성 (해시 비교로 변경된 것만 업데이트)
-      - name: Generate Algorithm Posts from README
+      # 3. Notion 알고리즘 DB → _posts/ 생성 (최종 편집 일시 기준으로 변경된 것만 업데이트)
+      - name: Generate Algorithm Posts from Notion
         run: python create_algo_post.py
         env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_ALGO_DB_ID: ${{ secrets.NOTION_ALGO_DB_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # 4. 변경된 알고리즘 포스트만 커밋
       - name: Commit Algorithm Posts
         run: |
-          git add _posts/boj/ _posts/swea/ _data/algo_last_sync.txt 2>/dev/null || true
+          git add _posts/boj/ _posts/swea/ 2>/dev/null || true
           git diff --staged --quiet || (git commit -m "chore: update algorithm posts" && git push)
 
       # 5. Notion DB → _posts/ 잡담 포스트 동기화
