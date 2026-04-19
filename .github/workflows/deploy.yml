@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
   schedule:
-    - cron: '0 */4 * * *'
+    - cron: '0 * * * *'
 
 permissions:
   contents: write
@@ -17,6 +17,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # 시작 시점 SHA 저장 (schedule 실행 시 빌드 필요 여부 판단용)
+      - name: Save initial SHA
+        id: initial_sha
+        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       # 1. 파이썬으로 데이터 업데이트
       - name: Set up Python
@@ -51,7 +56,7 @@ jobs:
       # 4. 변경된 알고리즘 포스트만 커밋
       - name: Commit Algorithm Posts
         run: |
-          git add _posts/boj/ _posts/swea/ 2>/dev/null || true
+          git add _posts/ 2>/dev/null || true
           git diff --staged --quiet || (git commit -m "chore: update algorithm posts" && git push)
 
       # 5. Notion DB → _posts/ 잡담 포스트 동기화
@@ -66,8 +71,21 @@ jobs:
           git add _posts/daily/ assets/img/daily/ 2>/dev/null || true
           git diff --staged --quiet || (git commit -m "chore: update daily posts" && git push)
 
+      # 실제 변경이 있을 때만 빌드 (push는 항상, schedule은 커밋 발생 시에만)
+      - name: Check if build needed
+        id: should_build
+        run: |
+          CURRENT=$(git rev-parse HEAD)
+          INITIAL="${{ steps.initial_sha.outputs.sha }}"
+          if [ "${{ github.event_name }}" = "push" ] || [ "$CURRENT" != "$INITIAL" ]; then
+            echo "result=true" >> $GITHUB_OUTPUT
+          else
+            echo "result=false" >> $GITHUB_OUTPUT
+          fi
+
       # 6. Ruby 환경 세팅 (Jekyll 빌드용)
       - name: Setup Ruby
+        if: steps.should_build.outputs.result == 'true'
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
@@ -75,17 +93,20 @@ jobs:
 
       # 7. Jekyll 빌드
       - name: Install Bundler & Build
+        if: steps.should_build.outputs.result == 'true'
         run: |
           bundle install
           bundle exec jekyll build
 
-      # 9. 빌드 결과물 업로드
+      # 8. 빌드 결과물 업로드
       - name: Upload artifact
+        if: steps.should_build.outputs.result == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./_site
 
-      # 10. 배포
+      # 9. 배포
       - name: Deploy to GitHub Pages
+        if: steps.should_build.outputs.result == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
