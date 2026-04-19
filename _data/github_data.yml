@@ -18,8 +18,8 @@ algorithms:
   description: 알고리즘 문제 풀이
   language: Python
   languages:
-    Python: 51.4
-    C++: 48.6
+    Python: 55.9
+    C++: 44.1
 baekjoon: {}
 recent_solved:
 - name: 18870. 좌표 압축 (Silver)
