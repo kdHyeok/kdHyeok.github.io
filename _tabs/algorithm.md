@@ -4,18 +4,9 @@ icon: fas fa-code
 order: 3
 ---
 
-{% assign bj = site.data.github_data.baekjoon %}
 {% assign algo_posts = site.posts | where_exp: "post", "post.categories contains 'algorithm'" %}
 
 <div class="algo-stats-row">
-  <div class="algo-stats-boj">
-    <img src="{{ bj.tier_image }}" width="64" alt="tier">
-    <div>
-      <p><strong>Rank</strong> #{{ bj.rank }}</p>
-      <p><strong>Solved</strong> {{ bj.solved_count }} Problems</p>
-    </div>
-  </div>
-
   {% for item in site.data.github_data.algorithms %}
   <div class="algo-stats-repo">
     <a href="{{ item.repo_url }}" target="_blank" class="algo-repo-title">
