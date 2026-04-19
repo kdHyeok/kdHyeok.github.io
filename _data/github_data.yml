@@ -16,7 +16,7 @@ algorithms:
   repo_url: https://github.com/kdHyeok/Algorithms
   pages_url: https://kdHyeok.github.io/Algorithms/
   description: 알고리즘 문제 풀이
-  language: Python
+  language: C++
   languages:
     C++: 100.0
 baekjoon: {}
